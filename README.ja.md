@@ -14,6 +14,14 @@ AIエージェント用プロンプトの使用制限を自動検知する、モ
 
 ## 🛠️ インストール
 
+### クイックインストール（推奨）
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/prompt-scheduler/cli/main/install.sh | bash
+```
+
+### 手動インストール
+
 ```bash
 # リポジトリをクローン
 git clone https://github.com/prompt-scheduler/cli.git
@@ -26,6 +34,12 @@ npm install
 cp prompts/prompts.jsonl.sample prompts/prompts.jsonl
 # prompts/prompts.jsonlを実際のtmuxセッションパスとプロンプトで編集
 ```
+
+### 必要要件
+
+- **Node.js 16+** と npm
+- **tmux** （自動化用）
+- **git** （インストール用）
 
 ## 🎨 使用方法
 

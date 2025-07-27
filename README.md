@@ -14,6 +14,14 @@ Modern TypeScript automation tool for scheduling and executing prompts for AI ag
 
 ## 🛠️ Installation
 
+### Quick Install (Recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/prompt-scheduler/cli/main/install.sh | bash
+```
+
+### Manual Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/prompt-scheduler/cli.git
@@ -26,6 +34,12 @@ npm install
 cp prompts/prompts.jsonl.sample prompts/prompts.jsonl
 # Edit prompts/prompts.jsonl with your actual tmux session paths and prompts
 ```
+
+### Requirements
+
+- **Node.js 16+** and npm
+- **tmux** (for automation)
+- **git** (for installation)
 
 ## 🎨 Usage
 
