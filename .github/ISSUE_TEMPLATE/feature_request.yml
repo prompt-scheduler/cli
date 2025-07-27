@@ -1,0 +1,119 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for Prompt Scheduler
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a feature! 🎯
+        Your ideas help make Claude Code Prompt Scheduler better for everyone.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-flight Checklist
+      description: Please verify these points before submitting
+      options:
+        - label: I have read the [README](https://github.com/prompt-scheduler/cli#readme) and [documentation](https://github.com/prompt-scheduler/cli/wiki)
+          required: true
+        - label: I have searched existing [issues](https://github.com/prompt-scheduler/cli/issues) for similar feature requests
+          required: true
+        - label: This feature request is specific to Prompt Scheduler
+          required: true
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What type of feature are you requesting?
+      options:
+        - New Command
+        - Configuration Enhancement
+        - UI/UX Improvement
+        - Performance Optimization
+        - Integration (new AI platform)
+        - Developer Experience
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What is the current limitation?
+      placeholder: "Currently, when using the scheduler, I find it difficult to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your ideal solution to this problem
+      placeholder: "I would like to be able to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Have you considered any alternative solutions or workarounds?
+      placeholder: "I've tried using... but it doesn't work well because..."
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe your specific use case and how this feature would help
+      placeholder: "In my workflow, I need to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples
+      description: Provide examples of how this feature would work (commands, config, etc.)
+      render: shell
+      placeholder: |
+        # Example command
+        tsx src/claude-schedule.ts run --new-feature-flag
+
+        # Example configuration
+        {"prompt": "...", "new_option": "value"}
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would improve my workflow
+        - High - Critical for my use case
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you willing to contribute to implementing this feature?
+      options:
+        - label: I would like to implement this feature myself
+        - label: I can help with testing
+        - label: I can help with documentation
+        - label: I can provide feedback during development
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context, screenshots, or examples that would help
+      placeholder: "This feature would be similar to how X tool handles..."

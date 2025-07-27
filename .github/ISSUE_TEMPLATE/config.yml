@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation & Wiki
+    url: https://github.com/prompt-scheduler/cli/wiki
+    about: Read the documentation and guides for using Prompt Scheduler
+  - name: 💬 Discussions
+    url: https://github.com/prompt-scheduler/cli/discussions
+    about: Ask questions, share ideas, and discuss with the community
+  - name: 🚀 Claude Code Official
+    url: https://claude.ai/code
+    about: Learn more about Claude Code and its capabilities
+  - name: 📖 Claude Code Documentation
+    url: https://docs.anthropic.com/en/docs/claude-code
+    about: Official Claude Code documentation and guides

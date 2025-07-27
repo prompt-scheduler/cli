@@ -1,0 +1,26 @@
+{
+  "name": "prompt-scheduler",
+  "version": "1.0.0",
+  "description": "Modern prompt automation scheduler for AI agents with intelligent usage limit detection. Currently supports Claude Code.",
+  "main": "dist/claude-schedule.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/claude-schedule.ts",
+    "run": "tsx src/claude-schedule.ts run",
+    "next": "tsx src/claude-schedule.ts next",
+    "status": "tsx src/claude-schedule.ts status",
+    "reset": "tsx src/claude-schedule.ts reset",
+    "help": "tsx src/claude-schedule.ts help"
+  },
+  "keywords": ["claude", "automation", "scheduler", "prompt", "tmux", "cli"],
+  "author": "Claude Code",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^24.0.15",
+    "chalk": "^5.4.1",
+    "dayjs": "^1.11.13",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}

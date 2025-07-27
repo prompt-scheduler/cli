@@ -1,0 +1,8 @@
+{"prompt": "Create a responsive login form with validation", "tmux_session": "/path/to/your/claude/session", "sent": "false", "sent_timestamp": null, "default_wait": "15m"}
+{"prompt": "Add error handling to the login form", "tmux_session": "/path/to/your/claude/session", "sent": "false", "sent_timestamp": null, "default_wait": "10m"}
+{"prompt": "Style the form with modern CSS and animations", "tmux_session": "/path/to/your/claude/session", "sent": "false", "sent_timestamp": null, "default_wait": "5m"}
+{"prompt": "Implement password strength indicator", "tmux_session": "/path/to/your/claude/session", "sent": "false", "sent_timestamp": null, "default_wait": "15m"}
+{"prompt": "Add accessibility features to the form", "tmux_session": "/path/to/your/claude/session", "sent": "false", "sent_timestamp": null, "default_wait": "10m"}
+{"prompt": "Create unit tests for form validation", "tmux_session": "/path/to/your/claude/session", "sent": "false", "sent_timestamp": null, "default_wait": "20m"}
+{"prompt": "Optimize form performance", "tmux_session": "/path/to/your/claude/session", "sent": "false", "sent_timestamp": null, "default_wait": "5m"}
+{"prompt": "Add social login integration", "tmux_session": "/path/to/your/claude/session", "sent": "false", "sent_timestamp": null, "default_wait": "30m"}
