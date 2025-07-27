@@ -2,6 +2,8 @@
 
 Modern TypeScript automation tool for scheduling and executing prompts for AI agents with intelligent usage limit detection. Currently supports Claude Code.
 
+**[📖 日本語版 README](README.ja.md)**
+
 ## ✨ Features
 
 - **🎯 Smart Automation**: Sequential prompt execution with customizable wait times

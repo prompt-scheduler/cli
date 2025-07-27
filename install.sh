@@ -167,15 +167,16 @@ install_prompt_scheduler() {
     
     cd "$app_dir"
     
-    # Install dependencies
+    # Install dependencies (including tsx/ts-node for TypeScript execution)
     print_step "Installing dependencies..."
-    npm install --production >/dev/null 2>&1
+    npm install >/dev/null 2>&1
     
     # Create executable wrapper
     print_step "Creating command wrapper..."
     cat > "$bin_dir/prompt-scheduler" << EOF
 #!/bin/bash
-exec node "$app_dir/src/claude-schedule.ts" "\$@"
+cd "$app_dir"
+exec npx tsx src/claude-schedule.ts "\$@"
 EOF
     
     chmod +x "$bin_dir/prompt-scheduler"
