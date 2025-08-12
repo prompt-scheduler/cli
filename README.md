@@ -61,7 +61,7 @@ Track your prompt execution progress with detailed status information:
 
 ![Status Command](assets/npm_run_status.png)
 
-### Advanced Time Control
+### Advanced Options
 ```bash
 # Stop execution at specific time
 tsx src/claude-schedule.ts run --stop-at 5pm
@@ -70,6 +70,13 @@ tsx src/claude-schedule.ts run --stop-at 17:30
 # Run for specific duration
 tsx src/claude-schedule.ts run --hours 3
 tsx src/claude-schedule.ts run --hours 2.5
+
+# Use custom prompt file
+tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl
+tsx src/claude-schedule.ts status --prompt-file ~/custom/prompts.jsonl
+
+# Ignore "Approaching usage limit" messages
+tsx src/claude-schedule.ts run --ignore-approaching-limit
 ```
 
 ### Direct TypeScript Execution
@@ -78,6 +85,9 @@ tsx src/claude-schedule.ts run     # Start automation
 tsx src/claude-schedule.ts status  # Check progress  
 tsx src/claude-schedule.ts next    # Execute one prompt
 tsx src/claude-schedule.ts 3       # Execute prompt #3
+
+# With custom options
+tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl --ignore-approaching-limit
 ```
 
 ## 📋 Commands
@@ -87,6 +97,8 @@ tsx src/claude-schedule.ts 3       # Execute prompt #3
 | `run` | Execute all unsent prompts sequentially with auto-wait |
 | `run --stop-at TIME` | Execute prompts until specific time (e.g., 5pm, 17:30) |
 | `run --hours N` | Execute prompts for N hours |
+| `run --prompt-file PATH` | Use custom prompt file instead of default |
+| `run --ignore-approaching-limit` | Ignore "Approaching usage limit" messages |
 | `next` | Execute only the next unsent prompt |
 | `status` | Show status of all prompts with timestamps |
 | `reset` | Reset all prompts to unsent status |
@@ -95,7 +107,22 @@ tsx src/claude-schedule.ts 3       # Execute prompt #3
 
 ## 📁 Configuration
 
+### Default Configuration
+
 Copy `prompts/prompts.jsonl.sample` to `prompts/prompts.jsonl` and edit it to configure your automation tasks. Each line represents a prompt configuration:
+
+### Custom Prompt Files
+
+You can use custom prompt files with the `--prompt-file` option:
+
+```bash
+# Create a custom prompt file
+cp prompts/prompts.jsonl.sample ~/my-project-prompts.jsonl
+
+# Use it with any command
+tsx src/claude-schedule.ts run --prompt-file ~/my-project-prompts.jsonl
+tsx src/claude-schedule.ts status --prompt-file ~/my-project-prompts.jsonl
+```
 
 ```jsonl
 {"prompt": "Create a responsive login form with validation", "tmux_session": "/path/to/your/claude/session", "sent": "false", "sent_timestamp": null, "default_wait": "15m"}
@@ -134,6 +161,16 @@ When detected during loop execution, the scheduler:
 5. Continues execution automatically
 
 ![Usage Limit Handling](assets/npm_run_run_with_usage_limit_dealing.png)
+
+### Ignoring Approaching Limit Messages
+
+By default, the scheduler stops for both "approaching" and "reached" limit messages. You can ignore "approaching" messages and only stop for "reached" messages:
+
+```bash
+tsx src/claude-schedule.ts run --ignore-approaching-limit
+```
+
+This allows the scheduler to continue running even when approaching the usage limit, only stopping when the limit is actually reached.
 
 **Note**: Usage limit detection is skipped for initial/single executions to avoid false positives from existing messages.
 

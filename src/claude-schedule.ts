@@ -35,6 +35,9 @@ interface PromptResult {
 interface ScheduleOptions {
   stopAtTime?: string; // "3pm", "15:00", etc.
   stopAfterHours?: number; // number of hours to run
+  promptFile?: string; // custom prompt file path
+  ignoreApproachingLimit?: boolean; // ignore "Approaching usage limit" messages
+  mode?: 'repeat' | 'sequential'; // execution mode
 }
 
 function sleep(ms: number): Promise<void> {
@@ -78,6 +81,17 @@ function showHelp(): void {
   console.log(colors.info('  --stop-at') + colors.muted('   - Stop execution at specific time (e.g., --stop-at 3pm)'));
   console.log(colors.info('  --hours') + colors.muted('     - Run for specified hours (e.g., --hours 2)'));
   
+  console.log(colors.primary('\n📄 FILE OPTIONS:'));
+  console.log(colors.info('  --prompt-file') + colors.muted(' - Use custom prompt file (e.g., --prompt-file /path/to/prompts.jsonl)'));
+  
+  console.log(colors.primary('\n🔄 MODE OPTIONS:'));
+  console.log(colors.info('  --mode') + colors.muted('        - Execution mode: repeat (default) or sequential'));
+  console.log(colors.muted('                    repeat: Use tmux history (Up key) to repeat prompts'));
+  console.log(colors.muted('                    sequential: Directly send prompts without history'));
+  
+  console.log(colors.primary('\n⚠️  LIMIT OPTIONS:'));
+  console.log(colors.info('  --ignore-approaching-limit') + colors.muted(' - Ignore "Approaching usage limit" messages'));
+  
   console.log(colors.primary('\n✨ FEATURES:'));
   console.log(colors.success('  • ⏱️  Auto usage limit detection & wait'));
   console.log(colors.success('  • 🔄 Sequential execution with custom wait times'));
@@ -87,19 +101,22 @@ function showHelp(): void {
   console.log(colors.success('  • ⏰ Time-based execution control'));
   
   console.log(colors.primary('\n🎨 USAGE EXAMPLES:'));
-  console.log(colors.accent('  tsx src/claude-schedule.ts run') + colors.muted('             # Start automation'));
-  console.log(colors.accent('  tsx src/claude-schedule.ts run --stop-at 5pm') + colors.muted(' # Stop at 5pm'));
-  console.log(colors.accent('  tsx src/claude-schedule.ts run --hours 3') + colors.muted('     # Run for 3 hours'));
-  console.log(colors.accent('  tsx src/claude-schedule.ts status') + colors.muted('          # Check progress'));
-  console.log(colors.accent('  tsx src/claude-schedule.ts next') + colors.muted('            # Execute one prompt'));
+  console.log(colors.accent('  tsx src/claude-schedule.ts run') + colors.muted('                         # Start automation (repeat mode)'));
+  console.log(colors.accent('  tsx src/claude-schedule.ts run --mode sequential') + colors.muted('        # Sequential mode'));
+  console.log(colors.accent('  tsx src/claude-schedule.ts run --stop-at 5pm') + colors.muted('             # Stop at 5pm'));
+  console.log(colors.accent('  tsx src/claude-schedule.ts run --hours 3') + colors.muted('                 # Run for 3 hours'));
+  console.log(colors.accent('  tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl') + colors.muted(' # Custom file'));
+  console.log(colors.accent('  tsx src/claude-schedule.ts run --ignore-approaching-limit') + colors.muted('   # Ignore approaching limit'));
+  console.log(colors.accent('  tsx src/claude-schedule.ts status') + colors.muted('                      # Check progress'));
+  console.log(colors.accent('  tsx src/claude-schedule.ts next') + colors.muted('                        # Execute one prompt'));
   
   console.log(colors.muted('\n💡 The scheduler automatically detects AI agent usage limit messages'));
   console.log(colors.muted('   and waits until the specified reset time before continuing.\n'));
-  console.log(colors.muted('📝 Edit prompts/prompts.jsonl to configure your automation tasks.\n'));
+  console.log(colors.muted('📝 Edit prompts/prompts.jsonl (or custom file) to configure your automation tasks.\n'));
   console.log(colors.muted('🎯 Currently supports Claude Code with plans for additional AI agents.\n'));
 }
 
-async function checkUsageLimit(session: string, skipInitial: boolean = false): Promise<boolean> {
+async function checkUsageLimit(session: string, skipInitial: boolean = false, ignoreApproaching: boolean = false): Promise<boolean> {
   // Skip usage limit check for initial execution (terminal startup)
   if (skipInitial) {
     return false;
@@ -111,11 +128,18 @@ async function checkUsageLimit(session: string, skipInitial: boolean = false): P
   const approachingMatch = content.match(/Approaching usage limit · resets at (\d+(am|pm))/i);
   const reachedMatch = content.match(/Claude usage limit reached\. Your limit will reset at (\d+(am|pm))/i);
   
-  const usageLimitMatch = approachingMatch || reachedMatch;
+  // If ignoreApproaching is true, only handle "reached" messages
+  const usageLimitMatch = ignoreApproaching ? reachedMatch : (approachingMatch || reachedMatch);
   
   if (usageLimitMatch) {
     const resetTime = usageLimitMatch[1];
     const limitType = approachingMatch ? "approaching" : "reached";
+    
+    if (ignoreApproaching && approachingMatch) {
+      console.log(colors.info(`ℹ️  Ignoring "approaching usage limit" message (--ignore-approaching-limit enabled)`));
+      return false;
+    }
+    
     console.log(colors.warning(`⚠️  Usage limit ${limitType} during loop execution. Resets at ${resetTime}`));
     
     // Parse time and calculate wait duration
@@ -219,6 +243,20 @@ function parseArgs(): { command: string; options: ScheduleOptions } {
     } else if (args[i] === '--hours' && args[i + 1]) {
       options.stopAfterHours = parseInt(args[i + 1]);
       i++; // Skip next arg
+    } else if (args[i] === '--prompt-file' && args[i + 1]) {
+      options.promptFile = args[i + 1];
+      i++; // Skip next arg
+    } else if (args[i] === '--ignore-approaching-limit') {
+      options.ignoreApproachingLimit = true;
+    } else if (args[i] === '--mode' && args[i + 1]) {
+      const mode = args[i + 1];
+      if (mode === 'repeat' || mode === 'sequential') {
+        options.mode = mode;
+      } else {
+        console.log(colors.error(`❌ Invalid mode: ${mode}. Valid modes: repeat, sequential`));
+        process.exit(1);
+      }
+      i++; // Skip next arg
     }
   }
   
@@ -249,13 +287,13 @@ function shouldStop(startTime: dayjs.Dayjs, options: ScheduleOptions): boolean {
   return false;
 }
 
-function loadPrompts(): PromptData[] {
-  if (!existsSync(PROMPTS_FILE)) {
-    console.log(colors.error(`❌ Error: ${PROMPTS_FILE} not found`));
+function loadPrompts(promptFile: string = PROMPTS_FILE): PromptData[] {
+  if (!existsSync(promptFile)) {
+    console.log(colors.error(`❌ Error: ${promptFile} not found`));
     process.exit(1);
   }
 
-  const content = readFileSync(PROMPTS_FILE, 'utf8');
+  const content = readFileSync(promptFile, 'utf8');
   const lines = content.trim().split('\n').filter(line => line.trim());
   
   return lines.map((line, index) => {
@@ -268,8 +306,8 @@ function loadPrompts(): PromptData[] {
   });
 }
 
-function updatePromptStatus(index: number, sent: boolean = true, timestamp: number | null = Date.now()): void {
-  const prompts = loadPrompts();
+function updatePromptStatus(index: number, sent: boolean = true, timestamp: number | null = Date.now(), promptFile: string = PROMPTS_FILE): void {
+  const prompts = loadPrompts(promptFile);
   
   if (index < 0 || index >= prompts.length) {
     console.log(colors.error(`❌ Error: Invalid prompt index ${index}`));
@@ -280,11 +318,11 @@ function updatePromptStatus(index: number, sent: boolean = true, timestamp: numb
   prompts[index].sent_timestamp = timestamp;
   
   const updatedContent = prompts.map(prompt => JSON.stringify(prompt)).join('\n');
-  writeFileSync(PROMPTS_FILE, updatedContent);
+  writeFileSync(promptFile, updatedContent);
 }
 
-function getNextPrompt(): PromptResult | null {
-  const prompts = loadPrompts();
+function getNextPrompt(promptFile: string = PROMPTS_FILE): PromptResult | null {
+  const prompts = loadPrompts(promptFile);
   
   for (let i = 0; i < prompts.length; i++) {
     const prompt = prompts[i];
@@ -296,8 +334,8 @@ function getNextPrompt(): PromptResult | null {
   return null;
 }
 
-function getPromptByIndex(index: number): PromptResult {
-  const prompts = loadPrompts();
+function getPromptByIndex(index: number, promptFile: string = PROMPTS_FILE): PromptResult {
+  const prompts = loadPrompts(promptFile);
   
   if (index < 1 || index > prompts.length) {
     console.log(colors.error(`❌ Error: Invalid prompt index ${index}. Available: 1-${prompts.length}`));
@@ -307,13 +345,39 @@ function getPromptByIndex(index: number): PromptResult {
   return { prompt: prompts[index - 1], index: index - 1 };
 }
 
-async function executePrompt(promptData: PromptData, session: string, skipUsageLimitCheck: boolean = false): Promise<void> {
+async function executePromptSequential(promptData: PromptData, session: string, skipUsageLimitCheck: boolean = false, ignoreApproaching: boolean = false): Promise<void> {
   // Check for usage limit before executing (skip for initial/single executions)
-  const usageLimitDetected = await checkUsageLimit(session, skipUsageLimitCheck);
+  const usageLimitDetected = await checkUsageLimit(session, skipUsageLimitCheck, ignoreApproaching);
   if (usageLimitDetected) {
     console.log(colors.success('✅ Usage limit wait completed, continuing with prompt execution...'));
   }
   
+  // Sequential mode: directly send prompt without using history
+  // Send Escape keys twice to clear any current input
+  tmuxSendKeys(session, 'Escape');
+  await sleep(200);
+  tmuxSendKeys(session, 'Escape');
+  
+  await sleep(1000);
+  
+  // Load prompt data directly to buffer and paste
+  tmuxLoadBufferFromData(promptData.prompt);
+  tmuxPasteBuffer(session);
+  
+  await sleep(1000);
+  
+  // Send Enter
+  tmuxSendKeys(session, 'Enter');
+}
+
+async function executePromptRepeat(promptData: PromptData, session: string, skipUsageLimitCheck: boolean = false, ignoreApproaching: boolean = false): Promise<void> {
+  // Check for usage limit before executing (skip for initial/single executions)
+  const usageLimitDetected = await checkUsageLimit(session, skipUsageLimitCheck, ignoreApproaching);
+  if (usageLimitDetected) {
+    console.log(colors.success('✅ Usage limit wait completed, continuing with prompt execution...'));
+  }
+  
+  // Repeat mode: use tmux history (original implementation)
   // Send Escape keys twice
   tmuxSendKeys(session, 'Escape');
   await sleep(200);
@@ -346,8 +410,18 @@ async function executePrompt(promptData: PromptData, session: string, skipUsageL
   tmuxSendKeys(session, 'Enter');
 }
 
+async function executePrompt(promptData: PromptData, session: string, skipUsageLimitCheck: boolean = false, ignoreApproaching: boolean = false, mode: 'repeat' | 'sequential' = 'repeat'): Promise<void> {
+  if (mode === 'sequential') {
+    await executePromptSequential(promptData, session, skipUsageLimitCheck, ignoreApproaching);
+  } else {
+    await executePromptRepeat(promptData, session, skipUsageLimitCheck, ignoreApproaching);
+  }
+}
+
 async function main(): Promise<void> {
   const { command, options } = parseArgs();
+  const promptFile = options.promptFile || PROMPTS_FILE;
+  const mode = options.mode || 'repeat';
   
   if (!command || command === 'help') {
     showHelp();
@@ -358,6 +432,8 @@ async function main(): Promise<void> {
     const startTime = dayjs();
     console.log(colors.highlight('\n🚀 Starting automated prompt execution...\n'));
     
+    console.log(colors.info(`📄 Using prompt file: ${promptFile}`));
+    console.log(colors.info(`🔄 Execution mode: ${mode}`));
     if (options.stopAtTime) {
       const stopTime = parseStopTime(options.stopAtTime);
       console.log(colors.info(`⏰ Will stop at ${options.stopAtTime} (${stopTime?.format('YYYY-MM-DD HH:mm:ss')})`));
@@ -367,7 +443,7 @@ async function main(): Promise<void> {
       console.log(colors.info(`⏰ Will stop after ${options.stopAfterHours} hours (${endTime.format('YYYY-MM-DD HH:mm:ss')})`));
     }
     
-    const prompts = loadPrompts();
+    const prompts = loadPrompts(promptFile);
     let executed = 0;
     let isFirstExecution = true;
     
@@ -387,8 +463,8 @@ async function main(): Promise<void> {
       
       console.log(colors.primary(`\n🎯 Executing prompt ${i + 1}:`), colors.accent(prompt.prompt));
       // Skip usage limit check for first execution, enable for subsequent ones
-      await executePrompt(prompt, prompt.tmux_session, isFirstExecution);
-      updatePromptStatus(i, true);
+      await executePrompt(prompt, prompt.tmux_session, isFirstExecution, options.ignoreApproachingLimit || false, mode);
+      updatePromptStatus(i, true, Date.now(), promptFile);
       executed++;
       console.log(colors.success(`✅ Prompt ${i + 1} completed`));
       
@@ -413,7 +489,7 @@ async function main(): Promise<void> {
     console.log(colors.highlight(`\n🎉 Execution completed! (${executed} new executions, ${elapsedTime} minutes elapsed)\n`));
     
   } else if (command === 'next') {
-    const nextPrompt = getNextPrompt();
+    const nextPrompt = getNextPrompt(promptFile);
     if (!nextPrompt) {
       console.log(colors.warning('⚠️  No unsent prompts found'));
       return;
@@ -421,13 +497,14 @@ async function main(): Promise<void> {
     
     console.log(colors.primary(`🎯 Executing next prompt:`), colors.accent(nextPrompt.prompt.prompt));
     // Skip usage limit check for single 'next' execution (initial execution)
-    await executePrompt(nextPrompt.prompt, nextPrompt.prompt.tmux_session, true);
-    updatePromptStatus(nextPrompt.index, true);
+    await executePrompt(nextPrompt.prompt, nextPrompt.prompt.tmux_session, true, options.ignoreApproachingLimit || false, mode);
+    updatePromptStatus(nextPrompt.index, true, Date.now(), promptFile);
     console.log(colors.success('✅ Prompt completed'));
     
   } else if (command === 'status') {
     console.log(colors.highlight('\n📊 PROMPT STATUS\n'));
-    const prompts = loadPrompts();
+    console.log(colors.info(`📄 Using prompt file: ${promptFile}\n`));
+    const prompts = loadPrompts(promptFile);
     prompts.forEach((prompt, index) => {
       const status = prompt.sent === "true" ? colors.success("✅ SENT") : colors.warning("⏳ PENDING");
       const timestamp = prompt.sent_timestamp ? 
@@ -438,9 +515,9 @@ async function main(): Promise<void> {
     console.log('');
     
   } else if (command === 'reset') {
-    const prompts = loadPrompts();
+    const prompts = loadPrompts(promptFile);
     prompts.forEach((_, index) => {
-      updatePromptStatus(index, false, null);
+      updatePromptStatus(index, false, null, promptFile);
     });
     console.log(colors.success('✅ All prompts reset to unsent status'));
     
@@ -452,12 +529,12 @@ async function main(): Promise<void> {
       return;
     }
     
-    const { prompt, index } = getPromptByIndex(promptIndex);
+    const { prompt, index } = getPromptByIndex(promptIndex, promptFile);
     
     console.log(colors.primary(`🎯 Executing prompt ${promptIndex}:`), colors.accent(prompt.prompt));
     // Skip usage limit check for single index execution (initial execution)
-    await executePrompt(prompt, prompt.tmux_session, true);
-    updatePromptStatus(index, true);
+    await executePrompt(prompt, prompt.tmux_session, true, options.ignoreApproachingLimit || false, mode);
+    updatePromptStatus(index, true, Date.now(), promptFile);
     console.log(colors.success('✅ Prompt completed'));
   }
 }

@@ -61,7 +61,7 @@ npm run help     # ヘルプを表示
 
 ![ステータスコマンド](assets/npm_run_status.png)
 
-### 高度な時間制御
+### 高度なオプション
 ```bash
 # 特定時刻で実行停止
 tsx src/claude-schedule.ts run --stop-at 5pm
@@ -70,6 +70,13 @@ tsx src/claude-schedule.ts run --stop-at 17:30
 # 特定継続時間で実行
 tsx src/claude-schedule.ts run --hours 3
 tsx src/claude-schedule.ts run --hours 2.5
+
+# カスタムプロンプトファイルを使用
+tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl
+tsx src/claude-schedule.ts status --prompt-file ~/custom/prompts.jsonl
+
+# "Approaching usage limit"メッセージを無視
+tsx src/claude-schedule.ts run --ignore-approaching-limit
 ```
 
 ### 直接TypeScript実行
@@ -78,6 +85,9 @@ tsx src/claude-schedule.ts run     # 自動化開始
 tsx src/claude-schedule.ts status  # 進捗確認
 tsx src/claude-schedule.ts next    # プロンプト1つ実行
 tsx src/claude-schedule.ts 3       # プロンプト#3を実行
+
+# カスタムオプション付き
+tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl --ignore-approaching-limit
 ```
 
 ## 📋 コマンド
@@ -87,6 +97,8 @@ tsx src/claude-schedule.ts 3       # プロンプト#3を実行
 | `run` | 未送信プロンプトを自動待機で順次実行 |
 | `run --stop-at TIME` | 特定時刻までプロンプトを実行 (例: 5pm, 17:30) |
 | `run --hours N` | N時間プロンプトを実行 |
+| `run --prompt-file PATH` | デフォルトではなくカスタムプロンプトファイルを使用 |
+| `run --ignore-approaching-limit` | "Approaching usage limit"メッセージを無視 |
 | `next` | 次の未送信プロンプトのみを実行 |
 | `status` | タイムスタンプ付きプロンプトステータスを表示 |
 | `reset` | すべてのプロンプトを未送信ステータスにリセット |
@@ -95,7 +107,22 @@ tsx src/claude-schedule.ts 3       # プロンプト#3を実行
 
 ## 📁 設定
 
+### デフォルト設定
+
 `prompts/prompts.jsonl.sample` を `prompts/prompts.jsonl` にコピーして編集し、自動化タスクを設定してください。各行はプロンプト設定を表します：
+
+### カスタムプロンプトファイル
+
+`--prompt-file` オプションでカスタムプロンプトファイルを使用できます：
+
+```bash
+# カスタムプロンプトファイルを作成
+cp prompts/prompts.jsonl.sample ~/my-project-prompts.jsonl
+
+# 任意のコマンドで使用
+tsx src/claude-schedule.ts run --prompt-file ~/my-project-prompts.jsonl
+tsx src/claude-schedule.ts status --prompt-file ~/my-project-prompts.jsonl
+```
 
 ```jsonl
 {"prompt": "バリデーション付きレスポンシブログインフォームを作成", "tmux_session": "/path/to/your/claude/session", "sent": "false", "sent_timestamp": null, "default_wait": "15m"}
@@ -134,6 +161,16 @@ tsx src/claude-schedule.ts 3       # プロンプト#3を実行
 5. 自動的に実行を継続
 
 ![使用制限の処理](assets/npm_run_run_with_usage_limit_dealing.png)
+
+### Approaching Limitメッセージの無視
+
+デフォルトでは、スケジューラーは「approaching」と「reached」の両方の制限メッセージで停止します。「approaching」メッセージを無視し、「reached」メッセージでのみ停止することができます：
+
+```bash
+tsx src/claude-schedule.ts run --ignore-approaching-limit
+```
+
+これにより、使用制限に近づいてもスケジューラーは実行を継続し、制限に実際に達したときにのみ停止します。
 
 **注意**: 既存メッセージからの誤検知を避けるため、初回/単発実行では使用制限検知はスキップされます。
 
