@@ -2,6 +2,7 @@
 
 import { execSync } from 'child_process';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
 import dayjs from 'dayjs';
 import chalk from 'chalk';
 
@@ -113,7 +114,7 @@ function showHelp(): void {
   console.log(colors.muted('\n💡 The scheduler automatically detects AI agent usage limit messages'));
   console.log(colors.muted('   and waits until the specified reset time before continuing.\n'));
   console.log(colors.muted('📝 Edit prompts/prompts.jsonl (or custom file) to configure your automation tasks.\n'));
-  console.log(colors.muted('🎯 Currently supports Claude Code with plans for additional AI agents.\n'));
+  console.log(colors.muted('🎯 Currently supports Claude Code with plans for additional AI agents.'));
 }
 
 async function checkUsageLimit(session: string, skipInitial: boolean = false, ignoreApproaching: boolean = false): Promise<boolean> {
@@ -420,11 +421,12 @@ async function executePrompt(promptData: PromptData, session: string, skipUsageL
 
 async function main(): Promise<void> {
   const { command, options } = parseArgs();
-  const promptFile = options.promptFile || PROMPTS_FILE;
+  const promptFile = resolve(options.promptFile || PROMPTS_FILE);
   const mode = options.mode || 'repeat';
   
   if (!command || command === 'help') {
     showHelp();
+    console.log(colors.info(`📄 Current prompt file: ${promptFile}\n`));
     return;
   }
   
