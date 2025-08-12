@@ -1,6 +1,6 @@
 # 🚀 Prompt Scheduler
 
-AIエージェント用プロンプトの使用制限を自動検知する、モダンなTypeScript自動化ツールです。現在Claude Codeに対応しています。
+> **バージョン 1.0.2** - AIエージェント用プロンプトの使用制限を自動検知する、モダンなTypeScript自動化ツールです。現在Claude Codeに対応しています。
 
 **[📖 English README](README.md)**
 
@@ -21,6 +21,17 @@ AIエージェント用プロンプトの使用制限を自動検知する、モ
 ```bash
 curl -fsSL https://raw.githubusercontent.com/prompt-scheduler/cli/main/install.sh | bash
 ```
+
+### 最新バージョンへのアップグレード
+
+最新バージョンにアップグレードするには、同じインストールコマンドを実行してください：
+
+```bash
+# 最新バージョンへアップグレード（インストールと同じコマンド）
+curl -fsSL https://raw.githubusercontent.com/prompt-scheduler/cli/main/install.sh | bash
+```
+
+インストーラーが既存のインストールを自動的に検出し、アップグレードします。
 
 ### 手動インストール
 
@@ -75,6 +86,9 @@ tsx src/claude-schedule.ts run --hours 2.5
 tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl
 tsx src/claude-schedule.ts status --prompt-file ~/custom/prompts.jsonl
 
+# シーケンシャル実行モードを使用（直接プロンプト送信）
+tsx src/claude-schedule.ts run --mode sequential
+
 # "Approaching usage limit"メッセージを無視
 tsx src/claude-schedule.ts run --ignore-approaching-limit
 ```
@@ -87,7 +101,7 @@ tsx src/claude-schedule.ts next    # プロンプト1つ実行
 tsx src/claude-schedule.ts 3       # プロンプト#3を実行
 
 # カスタムオプション付き
-tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl --ignore-approaching-limit
+tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl --mode sequential --ignore-approaching-limit
 ```
 
 ## 📋 コマンド
@@ -98,6 +112,7 @@ tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl --ignore-approac
 | `run --stop-at TIME` | 特定時刻までプロンプトを実行 (例: 5pm, 17:30) |
 | `run --hours N` | N時間プロンプトを実行 |
 | `run --prompt-file PATH` | デフォルトではなくカスタムプロンプトファイルを使用 |
+| `run --mode MODE` | 実行モードを設定: `repeat`（デフォルト）または `sequential` |
 | `run --ignore-approaching-limit` | "Approaching usage limit"メッセージを無視 |
 | `next` | 次の未送信プロンプトのみを実行 |
 | `status` | タイムスタンプ付きプロンプトステータスを表示 |
@@ -144,6 +159,21 @@ tsx src/claude-schedule.ts status --prompt-file ~/my-project-prompts.jsonl
 - **ランタイム**: 直接実行用のtsxを使ったNode.js
 - **依存関係**: chalk（色）、dayjs（時間）、tmux（自動化）
 - **アーキテクチャ**: 強い型付けを使った関数型プログラミング
+
+### 実行モード
+
+スケジューラーは2つの実行モードをサポートしています：
+
+- **`repeat`（デフォルト）**: tmuxコマンド履歴（上矢印キー）を使用して以前のプロンプトを繰り返し、新しいコンテンツで上書きします。このモードはtmuxセッション履歴に依存します。
+- **`sequential`**: tmux履歴を使用せずに直接プロンプトを送信します。このモードはより直接的で、以前のコマンド履歴に依存しません。
+
+```bash
+# repeatモードを使用（デフォルト - tmux履歴を使用）
+tsx src/claude-schedule.ts run
+
+# sequentialモードを使用（直接プロンプト送信）
+tsx src/claude-schedule.ts run --mode sequential
+```
 
 ## 💡 使用制限の処理
 

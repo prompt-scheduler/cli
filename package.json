@@ -1,6 +1,6 @@
 {
   "name": "prompt-scheduler",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Modern prompt automation scheduler for AI agents with intelligent usage limit detection. Currently supports Claude Code.",
   "main": "dist/claude-schedule.js",
   "type": "module",

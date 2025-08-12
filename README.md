@@ -1,6 +1,6 @@
 # 🚀 Prompt Scheduler
 
-Modern TypeScript automation tool for scheduling and executing prompts for AI agents with intelligent usage limit detection. Currently supports Claude Code.
+> **Version 1.0.2** - Modern TypeScript automation tool for scheduling and executing prompts for AI agents with intelligent usage limit detection. Currently supports Claude Code.
 
 **[📖 日本語版 README](README.ja.md)**
 
@@ -21,6 +21,17 @@ Modern TypeScript automation tool for scheduling and executing prompts for AI ag
 ```bash
 curl -fsSL https://raw.githubusercontent.com/prompt-scheduler/cli/main/install.sh | bash
 ```
+
+### Upgrade to Latest Version
+
+To upgrade to the latest version, simply run the same installation command:
+
+```bash
+# Upgrade to latest version (same command as installation)
+curl -fsSL https://raw.githubusercontent.com/prompt-scheduler/cli/main/install.sh | bash
+```
+
+The installer will automatically detect and upgrade your existing installation.
 
 ### Manual Installation
 
@@ -75,6 +86,9 @@ tsx src/claude-schedule.ts run --hours 2.5
 tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl
 tsx src/claude-schedule.ts status --prompt-file ~/custom/prompts.jsonl
 
+# Use sequential execution mode (direct prompt sending)
+tsx src/claude-schedule.ts run --mode sequential
+
 # Ignore "Approaching usage limit" messages
 tsx src/claude-schedule.ts run --ignore-approaching-limit
 ```
@@ -87,7 +101,7 @@ tsx src/claude-schedule.ts next    # Execute one prompt
 tsx src/claude-schedule.ts 3       # Execute prompt #3
 
 # With custom options
-tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl --ignore-approaching-limit
+tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl --mode sequential --ignore-approaching-limit
 ```
 
 ## 📋 Commands
@@ -98,6 +112,7 @@ tsx src/claude-schedule.ts run --prompt-file ~/my-prompts.jsonl --ignore-approac
 | `run --stop-at TIME` | Execute prompts until specific time (e.g., 5pm, 17:30) |
 | `run --hours N` | Execute prompts for N hours |
 | `run --prompt-file PATH` | Use custom prompt file instead of default |
+| `run --mode MODE` | Set execution mode: `repeat` (default) or `sequential` |
 | `run --ignore-approaching-limit` | Ignore "Approaching usage limit" messages |
 | `next` | Execute only the next unsent prompt |
 | `status` | Show status of all prompts with timestamps |
@@ -144,6 +159,21 @@ tsx src/claude-schedule.ts status --prompt-file ~/my-project-prompts.jsonl
 - **Runtime**: Node.js with tsx for direct execution
 - **Dependencies**: chalk (colors), dayjs (time), tmux (automation)
 - **Architecture**: Functional programming with strong typing
+
+### Execution Modes
+
+The scheduler supports two execution modes:
+
+- **`repeat` (default)**: Uses tmux command history (Up arrow key) to repeat previous prompts, then overwrites with new content. This mode relies on tmux session history.
+- **`sequential`**: Directly sends prompts without using tmux history. This mode is more straightforward and doesn't depend on previous command history.
+
+```bash
+# Use repeat mode (default - uses tmux history)
+tsx src/claude-schedule.ts run
+
+# Use sequential mode (direct prompt sending)
+tsx src/claude-schedule.ts run --mode sequential
+```
 
 ## 💡 Usage Limit Handling
 
