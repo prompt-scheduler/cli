@@ -385,7 +385,8 @@ async function executePromptRepeat(promptData: PromptData, session: string, skip
   tmuxSendKeys(session, 'Escape');
   
   // await sleep(1000);
-  await sleep(5000);
+  // await sleep(5000);
+  await sleep(10000);
   
   // Send Up arrow key
   tmuxSendKeys(session, 'Up');
@@ -396,7 +397,8 @@ async function executePromptRepeat(promptData: PromptData, session: string, skip
   tmuxSendKeys(session, 'Enter');
   
   // await sleep(1000);
-  await sleep(5000);
+  // await sleep(5000);
+  await sleep(10000);
   
   // Send Ctrl+C
   tmuxSendKeys(session, 'C-c');
