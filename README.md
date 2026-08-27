@@ -4,6 +4,20 @@
 
 **[📖 日本語版 README](README.ja.md)**
 
+<!-- BEGIN gh-mutual-linking -->
+
+### Related projects
+
+- [**terminal-scheduler**](https://github.com/vsc-ext/terminal-scheduler) — Prompt automation for terminal-based agents, for VSCode.
+- [**ai-bwrap**](https://github.com/didvc/ai-bwrap) — Run AI coding agents (Claude Code, opencode, Grok, ...) inside a bubblewrap sandbox — one wrapper, any agent.
+- [**agent.txtar**](https://github.com/didvc/agent.txtar) — Portable text block for giving structured context to AI agents — embed anywhere, parse anywhere
+- [**opencode-bwrap**](https://github.com/didvc/opencode-bwrap) — Run opencode inside a bubblewrap sandbox — confine AI file access to your current working directory
+- [**claude-code-jsonl-editor**](https://github.com/didvc/claude-code-jsonl-editor) — 🚀 Interactive JSONL editor for Claude Code conversation files with real-time file system synchronization. Efficient prompt engineering through…
+- [**cli**](https://github.com/prompt-management/cli) — CLI tool for managing AI prompts with search and organization capabilities. Personal, secure prompt library with YAML storage and metadata filtering.
+- [**notification-cli**](https://github.com/didvc/notification-cli) — Minimalistic Command Line Notification Application under 50 Lines
+- [**node-cron-cli**](https://github.com/didvc/node-cron-cli) — Command Line Implementation for Node Cron Under 20 Lines.
+<!-- END gh-mutual-linking -->
+
 ## ✨ Features
 
 - **🎯 Smart Automation**: Sequential prompt execution with customizable wait times
